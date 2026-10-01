@@ -62,6 +62,7 @@
     $('account-form').onsubmit = e => { e.preventDefault(); run(async () => {
       const password = $('account-password').value; $('account-password').value = '';
       await store.login($('account-username').value, password, signup);
+      signup = false;
     }); };
     $('account-sync').onclick = () => run(() => store.sync());
     $('account-import').onclick = () => run(() => store.importGuest(loadGuest()));
