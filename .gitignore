@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.neon
+__pycache__/
+*.pyc
+test-results/
+playwright-report/
+tmp/
+.claude/
+.codex/

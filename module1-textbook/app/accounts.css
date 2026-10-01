@@ -1,0 +1,14 @@
+.account-trigger { flex-shrink: 0; margin-inline: 8px; }
+.account-dialog { border: 1px solid #d3ded9; border-radius: 16px; padding: 24px; width: min(440px, calc(100vw - 32px)); max-height: 85vh; color: #243a33; background: #fffefb; box-shadow: 0 20px 80px #122c3340; }
+.account-dialog::backdrop { background: #10292288; }
+.account-dialog h2 { margin: 0 0 12px; font-size: 24px; }
+.account-dialog p { line-height: 1.5; }
+.account-dialog label { display: block; margin: 16px 0 6px; font-weight: 600; }
+.account-dialog input { width: 100%; box-sizing: border-box; padding: 11px; border: 1px solid #879b91; border-radius: 6px; font: inherit; }
+.account-dialog .account-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.account-dialog button { cursor: pointer; }
+.account-dialog .account-message { min-height: 1.5em; color: #96331f; }
+.account-dialog .account-help { font-size: 14px; color: #576e63; }
+.account-conflict { padding: 12px 0; border-top: 1px solid #d3ded9; }
+.account-dialog [hidden] { display: none !important; }
+@media (max-width: 600px) { .account-trigger { padding: 7px 9px; font-size: 12px; } }

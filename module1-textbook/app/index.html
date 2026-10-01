@@ -1,0 +1,1115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Textbook</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400&family=Scheherazade+New:wght@400;700&display=swap">
+<style>
+/* Warm paper backdrop, white reading sheets, one accent colour per module (--mod, set by script).
+   Fonts and font sizes are unchanged from the previous design. No visible scrollbars anywhere. */
+:root{
+  --canvas:#f6f4ef; --paper:#ffffff; --fg:#1d1b17; --muted:#5f5a52; --faint:#948e84;
+  --hair:#ebe7df; --hair2:#dcd6cb; --soft:#f8f6f2; --soft2:#efebe4;
+  --mod:#0f766e;
+  --mod-ink:color-mix(in srgb,var(--mod) 78%,#000);
+  --mod-soft:color-mix(in srgb,var(--mod) 9%,#fff);
+  --mod-soft2:color-mix(in srgb,var(--mod) 16%,#fff);
+  --mod-line:color-mix(in srgb,var(--mod) 30%,#fff);
+  --ok:#1b8a4b; --okbg:#e9f6ee; --okline:#a9dcbd; --bad:#c43c2a; --badbg:#fdeee9; --badline:#f2b8ab;
+  --gold:#b7791f; --goldbg:#fdf5e4;
+  --en:Calibri,Carlito,'Segoe UI',sans-serif; --ar:'Traditional Arabic','Scheherazade New',serif;
+  --top:56px; --sw:280px; --r:12px;
+  --shadow-s:0 1px 2px rgba(40,30,15,.05),0 1px 3px rgba(40,30,15,.04);
+  --shadow-m:0 2px 6px rgba(40,30,15,.05),0 10px 28px rgba(40,30,15,.07);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+/* hide scrollbars everywhere while keeping scrolling */
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}
+html{scroll-padding-top:calc(var(--top) + 16px)}
+body{background:var(--canvas);color:var(--fg);font-family:var(--en);font-size:16px;line-height:1.55;margin:0;-webkit-font-smoothing:antialiased}
+body.lock{overflow:hidden}
+.ar{font-family:var(--ar);font-size:1.333em;line-height:1;unicode-bidi:isolate}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--mod);outline-offset:2px;border-radius:6px}
+::selection{background:var(--mod-soft2)}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.skip{position:absolute;left:-999px;top:8px;z-index:100;background:var(--mod);color:#fff;padding:8px 12px;border-radius:8px}
+.skip:focus{left:8px}
+kbd{font:inherit;font-size:12px;border:1px solid var(--hair2);border-bottom-width:2px;border-radius:5px;padding:0 5px;color:var(--muted);background:var(--paper)}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:30;height:var(--top);display:flex;align-items:center;gap:12px;padding:0 16px;background:rgba(255,255,255,.86);backdrop-filter:saturate(1.6) blur(12px);border-bottom:1px solid var(--hair);box-shadow:0 1px 0 rgba(255,255,255,.6)}
+.topbar::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--mod),color-mix(in srgb,var(--mod) 40%,var(--gold)))}
+.iconbtn{display:inline-grid;place-items:center;width:38px;height:38px;border:1px solid transparent;border-radius:10px;background:none;cursor:pointer;color:var(--muted);flex:none;transition:background .15s,color .15s}
+.iconbtn:hover{background:var(--mod-soft);color:var(--mod-ink)}
+.brand{min-width:0;flex:1;display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden}
+.brand .badge{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 7px;border-radius:8px;background:var(--mod);color:#fff;font-size:14px;font-weight:700;flex:none}
+.brand b{font-size:17px;overflow:hidden;text-overflow:ellipsis}
+.brand .ar{font-size:21px;color:var(--mod-ink);opacity:.85}
+.overall{display:flex;align-items:center;gap:10px;flex:none;background:var(--soft);border:1px solid var(--hair);border-radius:99px;padding:5px 12px 5px 14px}
+.overall .num{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.overall .num b{color:var(--mod-ink)}
+.bar{width:140px;height:7px;border-radius:99px;background:var(--soft2);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mod),color-mix(in srgb,var(--mod) 55%,#fff));border-radius:inherit;transition:width .6s var(--ease)}
+.readline{position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--mod);transform-origin:0 50%;transform:scaleX(0)}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:var(--sw) minmax(0,1fr);transition:grid-template-columns .28s var(--ease)}
+.app.collapsed{--sw:0px}
+.side{position:sticky;top:var(--top);height:calc(100dvh - var(--top));overflow:hidden;border-right:1px solid var(--hair);background:linear-gradient(180deg,#faf9f6,var(--canvas))}
+.app.collapsed .side{border-right-color:transparent}
+.side-in{width:280px;height:100%;display:flex;flex-direction:column}
+.side-head{display:none;align-items:center;justify-content:space-between;padding:10px 12px 10px 18px;border-bottom:1px solid var(--hair)}
+.side-head b{font-size:16px}
+.side-scroll{flex:1;overflow-y:auto;padding:16px 12px 18px;overscroll-behavior:contain}
+.side-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:2px 10px 10px;font-weight:700}
+.side-foot{border-top:1px solid var(--hair);padding:10px 18px 12px;font-size:13px;color:var(--muted)}
+.side-foot .save{display:flex;align-items:center;gap:6px}
+.side-foot .save::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--okbg);flex:none}
+.side-foot .keys{margin-top:5px;color:var(--faint)}
+
+ol.lessons{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.lesson-btn{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:11px;padding:8px 10px;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s}
+.lesson-btn:hover{background:rgba(255,255,255,.75);border-color:var(--hair)}
+.lesson-btn[aria-current="page"]{background:var(--paper);border-color:var(--hair);box-shadow:var(--shadow-s)}
+.lesson-btn[aria-current="page"]::before{content:"";position:absolute;left:-1px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--mod)}
+.lesson-btn[aria-current="page"] .ln{font-weight:700;color:var(--mod-ink)}
+.dot{--p:0;width:30px;height:30px;border-radius:50%;padding:2.5px;background:conic-gradient(var(--mod) calc(var(--p) * 360deg),var(--hair2) 0);transition:background .4s}
+.dot>span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:var(--paper);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--mod-ink)}
+.dot .chk{display:none}
+.lesson-btn.complete .dot>span{background:var(--mod);color:#fff}
+.lesson-btn.complete .dot .lbl{display:none}
+.lesson-btn.complete .dot .chk{display:block;width:15px;height:15px;stroke-width:3}
+.lt{min-width:0;display:flex;flex-direction:column}
+.ln{font-size:15px;line-height:1.25}
+.ls{font-size:13px;color:var(--muted);line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ls .ar{font-size:1.25em}
+.cnt{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums;background:var(--soft2);border-radius:99px;padding:1px 7px}
+.cnt:empty{display:none}
+.lesson-btn.complete .cnt{background:var(--mod-soft2);color:var(--mod-ink)}
+.toc{list-style:none;margin:4px 0 8px 25px;padding:0 0 0 14px;border-left:2px solid var(--hair2)}
+.toc a{position:relative;display:block;color:var(--muted);text-decoration:none;font-size:14px;line-height:1.3;padding:5px 9px;border-radius:8px;transition:background .15s,color .15s}
+.toc a:hover{color:var(--fg);background:rgba(255,255,255,.8)}
+.toc a.active{color:var(--mod-ink);font-weight:700;background:var(--mod-soft)}
+.toc a.active::before{content:"";position:absolute;left:-16px;top:5px;bottom:5px;width:2px;background:var(--mod);border-radius:2px}
+.toc .ar{font-size:1.25em}
+.backlink{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:4px 8px;margin:-4px -8px 0;border-radius:8px;color:var(--muted);font-size:13px;letter-spacing:0;text-transform:none;cursor:pointer;font-weight:400}
+.backlink:hover{color:var(--mod-ink);background:var(--mod-soft)}
+.backlink svg.i{width:15px;height:15px}
+.modname{margin:2px 0 12px;padding:12px 14px;border-radius:12px;background:var(--mod-soft);border:1px solid var(--mod-line);display:flex;flex-direction:column}
+.modname span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mod-ink);font-weight:700;opacity:.8}
+.modname b{font-size:17px;line-height:1.25;color:var(--fg)}
+
+.scrim{position:fixed;inset:0;z-index:39;background:rgba(30,25,15,.35);opacity:0;pointer-events:none;transition:opacity .25s}
+
+/* ---------- reading column ---------- */
+main{min-width:0;padding:32px clamp(16px,4vw,48px) 96px}
+.page{max-width:820px;margin:0 auto}
+.lhead{position:relative;margin-bottom:26px;padding:26px 30px 22px;border-radius:18px;background:
+  radial-gradient(120% 140% at 100% 0%,var(--mod-soft2) 0%,transparent 55%),
+  linear-gradient(180deg,var(--paper),var(--paper));border:1px solid var(--hair);box-shadow:var(--shadow-s);overflow:hidden}
+.lhead::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;border:24px solid color-mix(in srgb,var(--mod) 7%,transparent);pointer-events:none}
+.kick{display:inline-flex;align-items:center;gap:6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mod-ink);font-weight:700;background:var(--mod-soft);border:1px solid var(--mod-line);border-radius:99px;padding:3px 11px}
+h1.ltitle{font-size:32px;line-height:1.2;margin:14px 0 14px;text-wrap:balance;outline:none;position:relative}
+h1.ltitle .ar{font-size:1.15em;color:var(--mod-ink)}
+.lmeta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;color:var(--muted);font-size:14px;position:relative}
+.lmeta .sep{width:4px;height:4px;border-radius:50%;background:var(--hair2)}
+.lmeta .lprog{display:inline-flex;align-items:center;gap:8px}
+.lmeta .lprog .bar{width:90px}
+.chipbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--mod);color:#fff;border-radius:99px;padding:6px 14px;font-size:14px;cursor:pointer;margin-left:auto;font-weight:700;box-shadow:0 2px 8px color-mix(in srgb,var(--mod) 35%,transparent);transition:transform .15s,box-shadow .15s}
+.chipbtn:hover{transform:translateY(-1px);box-shadow:0 4px 14px color-mix(in srgb,var(--mod) 40%,transparent)}
+.chipbtn svg.i{width:15px;height:15px}
+
+.teach{font-size:17px;line-height:1.7;background:var(--paper);border:1px solid var(--hair);border-radius:18px;padding:12px 34px 22px;box-shadow:var(--shadow-s)}
+.teach:empty{display:none}
+.teach p{margin:0 0 12px}
+.teach b .ar,.teach strong .ar{color:var(--mod-ink)}
+.teach h2.sec{position:relative;font-size:22px;line-height:1.3;margin:38px 0 14px;padding-left:16px;text-wrap:balance}
+.teach h2.sec::before{content:"";position:absolute;left:0;top:.2em;bottom:.2em;width:4px;border-radius:4px;background:linear-gradient(180deg,var(--mod),var(--mod-line))}
+.teach h2.sec:first-child{margin-top:20px}
+.teach ol.tight,.teach ul.tight,.teach ul,.teach ol{margin:4px 0 14px;padding-left:24px}
+.teach li{margin:0 0 6px}
+.teach li::marker{color:var(--mod)}
+.exm{margin:10px 0 14px;padding:10px 16px;border-left:3px solid var(--mod);background:linear-gradient(90deg,var(--mod-soft),transparent 85%);border-radius:0 10px 10px 0}
+.exm p{margin:0 0 4px}
+.exm .gl{color:var(--muted);font-style:italic}
+.exm b .ar{color:var(--fg)}
+.worked{position:relative;border:1px solid var(--mod-line);border-radius:var(--r);background:var(--mod-soft);padding:22px 22px 8px;margin:22px 0 22px}
+.worked::before{content:"Worked example";position:absolute;top:-11px;left:16px;background:var(--mod);color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:99px;box-shadow:0 2px 6px color-mix(in srgb,var(--mod) 30%,transparent)}
+.worked h2.sec{margin-top:4px;font-size:19px}
+.worked .tbl{background:var(--paper)}
+.worked .exm{background:rgba(255,255,255,.65)}
+.blank{display:inline-block;min-width:4em;border-bottom:2px solid var(--mod)}
+
+.tbl{overflow-x:auto;border:1px solid var(--hair2);border-radius:var(--r);margin:12px 0 18px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{padding:10px 12px;text-align:center;vertical-align:middle;border-bottom:1px solid var(--hair);border-right:1px solid var(--hair)}
+th:last-child,td:last-child{border-right:0}
+tbody tr:last-child td{border-bottom:0}
+th{background:var(--mod-soft);font-weight:700;font-size:14px;color:var(--mod-ink);border-bottom-color:var(--mod-line)}
+tbody tr:nth-child(even) td{background:#fcfbf9}
+tbody tr:hover td{background:var(--mod-soft)}
+
+/* ---------- practice ---------- */
+.practice{margin-top:40px}
+.phead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 16px;padding:22px 26px;border-radius:18px;background:linear-gradient(135deg,var(--mod) 0%,var(--mod-ink) 100%);color:#fff;box-shadow:var(--shadow-m)}
+.phead h2{margin:0;font-size:26px;line-height:1.2}
+.phead p{margin:4px 0 0;color:rgba(255,255,255,.82);font-size:14px}
+.phead kbd{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+.phead .right{display:flex;align-items:center;gap:12px;font-size:14px;color:rgba(255,255,255,.9);font-variant-numeric:tabular-nums}
+.phead #pcount{background:rgba(255,255,255,.16);border-radius:99px;padding:4px 12px;font-weight:700}
+.linkbtn{background:none;border:0;padding:4px 2px;cursor:pointer;color:inherit;opacity:.85;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:hover{opacity:1}
+.linkbtn.armed{color:#ffd9cf;font-weight:700;opacity:1}
+
+.qnav{position:sticky;top:var(--top);z-index:20;margin:14px -8px 8px;padding:10px 8px;background:rgba(246,244,239,.9);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;transition:box-shadow .2s;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 18px),transparent)}
+.qnav.stuck{box-shadow:0 8px 14px -12px rgba(40,30,15,.25)}
+.qchip{flex:none;min-width:46px;height:32px;padding:0 10px;border-radius:99px;border:1px solid var(--hair2);background:var(--paper);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);cursor:pointer;transition:all .15s;box-shadow:var(--shadow-s)}
+.qchip:hover{border-color:var(--mod);color:var(--mod-ink)}
+.qchip.wip{border-color:var(--mod-line);background:var(--mod-soft);color:var(--mod-ink)}
+.qchip.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.qchip.bad{background:var(--badbg);border-color:var(--badline);color:var(--bad)}
+.qchip.here{box-shadow:0 0 0 2px var(--canvas),0 0 0 4px var(--mod)}
+
+h3.set{display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+h3.set::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--hair2),transparent)}
+h3.set .code{display:inline-grid;place-items:center;min-width:32px;height:24px;padding:0 8px;border-radius:7px;background:var(--mod);color:#fff;letter-spacing:0;font-size:12px}
+.gnote{margin:-4px 0 12px;color:var(--muted);font-size:15px}.gnote p{margin:0 0 6px}
+
+.card{position:relative;border:1px solid var(--hair);border-radius:16px;padding:20px 22px 18px;margin-bottom:16px;background:var(--paper);scroll-margin-top:calc(var(--top) + 64px);box-shadow:var(--shadow-s);transition:border-color .2s,box-shadow .2s,transform .2s}
+.card:focus{outline:none}
+.card:hover{box-shadow:var(--shadow-m)}
+.card:focus-within{border-color:var(--mod-line);box-shadow:0 0 0 4px var(--mod-soft),var(--shadow-m)}
+.card::before{content:"";position:absolute;left:-1px;top:16px;bottom:16px;width:4px;border-radius:0 4px 4px 0;background:transparent;transition:background .2s}
+.card.done-ok{border-color:var(--okline)}
+.card.done-ok::before{background:var(--ok)}
+.card.done-bad{border-color:var(--badline)}
+.card.done-bad::before{background:var(--bad)}
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.qid{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--mod-ink);background:var(--mod-soft);border-radius:7px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.st{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:3px 11px 3px 9px;border-radius:99px}
+.st:empty{display:none}
+.st.ok{color:var(--ok);background:var(--okbg)}
+.st.bad{color:var(--bad);background:var(--badbg)}
+.st svg.i{width:14px;height:14px;stroke-width:3}
+.prompt{margin:0 0 16px;font-size:17px;line-height:1.55}
+.prompt b .ar{color:var(--mod-ink)}
+.prompt p{margin:0 0 8px}.prompt p:last-child{margin-bottom:0}
+.prompt ol,.prompt ul{margin:6px 0 4px;padding-left:24px}.prompt li{margin-bottom:5px}
+.prompt .tbl{margin:8px 0}
+
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:grid;grid-template-columns:30px minmax(0,1fr) 20px;gap:12px;align-items:center;text-align:left;width:100%;border:1.5px solid var(--hair2);border-radius:12px;background:var(--paper);padding:10px 14px;cursor:pointer;min-height:50px;font-size:16px;transition:border-color .15s,background .15s,box-shadow .15s,transform .1s}
+.opt:hover{border-color:var(--mod-line);background:var(--mod-soft)}
+.opt:active{transform:scale(.995)}
+.opt .key{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--soft2);font-size:13px;font-weight:700;color:var(--muted);transition:all .15s}
+.opt .mk{display:none}
+.opt .mk svg.i{width:18px;height:18px;stroke-width:3}
+.opt[aria-pressed="true"]{border-color:var(--mod);background:var(--mod-soft);box-shadow:0 0 0 3px var(--mod-soft2)}
+.opt[aria-pressed="true"] .key{background:var(--mod);color:#fff}
+.opt.ok{border-color:var(--ok);background:var(--okbg);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 15%,transparent)}
+.opt.ok .key{background:var(--ok);color:#fff}
+.opt.ok .mk{display:block;color:var(--ok)}
+.opt.bad{border-color:var(--bad);background:var(--badbg);box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 13%,transparent)}
+.opt.bad .key{background:var(--bad);color:#fff}
+.opt.bad .mk{display:block;color:var(--bad)}
+
+.card .tbl{margin:4px 0 4px}
+.card td.lab{min-width:110px;font-weight:700;background:var(--soft)}
+.card td{transition:background .2s,box-shadow .2s}
+.card tbody tr:nth-child(even) td{background:var(--paper)}
+.card tbody tr:nth-child(even) td.lab,.card tbody tr td.lab{background:var(--soft)}
+.card tbody tr:hover td{background:inherit}
+.card td.ok{background:var(--okbg)!important;box-shadow:inset 0 0 0 2px var(--ok)}
+.card td.bad{background:var(--badbg)!important;box-shadow:inset 0 0 0 2px var(--bad)}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.pill{border:1.5px solid var(--hair2);border-radius:99px;background:var(--paper);padding:4px 14px;cursor:pointer;min-height:36px;transition:all .15s}
+.pill:hover{border-color:var(--mod-line);background:var(--mod-soft)}
+.pill[aria-pressed="true"]{background:var(--mod);border-color:var(--mod);color:#fff;box-shadow:0 2px 8px color-mix(in srgb,var(--mod) 30%,transparent)}
+select{appearance:none;-webkit-appearance:none;font:inherit;color:var(--fg);background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235f5a52' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;border:1.5px solid var(--hair2);border-radius:10px;padding:7px 32px 7px 10px;max-width:100%;min-height:40px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+select:hover{border-color:var(--mod-line)}
+select:focus{outline:none;border-color:var(--mod);box-shadow:0 0 0 3px var(--mod-soft2)}
+select.filled{border-color:var(--mod);background-color:var(--mod-soft)}
+select.arsel{font-family:var(--ar);font-size:19px;direction:rtl;background-position:left 10px center;padding:5px 10px 5px 32px}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px;padding-top:14px;border-top:1px dashed var(--hair)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--hair2);border-radius:10px;background:var(--paper);padding:7px 14px;cursor:pointer;min-height:40px;font-size:15px;transition:background .15s,border-color .15s,opacity .15s,transform .1s,box-shadow .15s}
+.btn:hover:not(:disabled){border-color:var(--mod-line);background:var(--mod-soft)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.primary{background:var(--mod);border-color:var(--mod);color:#fff;font-weight:700;padding-inline:20px;box-shadow:0 2px 8px color-mix(in srgb,var(--mod) 35%,transparent)}
+.btn.primary:hover:not(:disabled){background:var(--mod-ink);border-color:var(--mod-ink)}
+.btn.ghost{border-color:transparent;color:var(--muted);background:transparent}
+.btn.ghost:hover:not(:disabled){color:var(--mod-ink);background:var(--mod-soft);border-color:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btn svg.i{width:16px;height:16px}
+.btn .chev{transition:transform .2s}
+.btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.actions .grow{flex:1}
+.result{font-size:15px;font-weight:700}
+.result.ok{color:var(--ok)} .result.bad{color:var(--bad)}
+.hint{font-size:14px;color:var(--faint)}
+.btn.next{border-color:var(--mod);color:var(--mod-ink)}
+.btn.mark-ok{border-color:var(--okline);color:var(--ok);font-weight:700}
+.btn.mark-ok:hover:not(:disabled){background:var(--okbg);border-color:var(--ok)}
+.btn.mark-bad{border-color:var(--badline);color:var(--bad);font-weight:700}
+.btn.mark-bad:hover:not(:disabled){background:var(--badbg);border-color:var(--bad)}
+.selfmark{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+textarea.ans{display:block;width:100%;min-height:76px;resize:vertical;font-family:Calibri,Carlito,'Segoe UI','Traditional Arabic','Scheherazade New',sans-serif;font-size:17px;line-height:1.6;color:var(--fg);background:var(--soft);border:1.5px solid var(--hair2);border-radius:12px;padding:10px 12px;transition:border-color .15s,box-shadow .15s,background .15s}
+textarea.ans:hover{border-color:var(--mod-line)}
+textarea.ans:focus{outline:none;border-color:var(--mod);background:var(--paper);box-shadow:0 0 0 3px var(--mod-soft2)}
+textarea.ans::placeholder{color:var(--faint);font-family:var(--en);direction:ltr}
+
+.solwrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
+.solwrap.open{grid-template-rows:1fr}
+.solwrap>div{overflow:hidden}
+.sol{margin-top:14px;border-radius:12px;background:linear-gradient(180deg,var(--goldbg),#fffdf7);border:1px solid #f0e2c2;padding:14px 18px 6px;font-size:16px}
+.sol h4{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.sol h4::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.sol p{margin:0 0 10px} .sol ol,.sol ul{margin:0 0 10px;padding-left:22px}
+.sol .tbl{background:var(--paper)}
+.sol .sub{margin-top:12px}.solnote{margin-top:10px;padding-top:8px;border-top:1px dashed #ead9b4}
+
+.done{display:none;align-items:center;gap:16px;margin:24px 0 8px;padding:20px 22px;border-radius:16px;background:linear-gradient(135deg,var(--ok),color-mix(in srgb,var(--ok) 60%,var(--mod)));color:#fff;box-shadow:var(--shadow-m)}
+.done.show{display:flex;animation:rise .45s var(--ease)}
+.done .big{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.95);color:var(--ok);flex:none}
+.done .big svg.i{width:22px;height:22px;stroke-width:3}
+.done b{display:block;font-size:17px}
+.done span{font-size:14px;opacity:.9}
+.done .btn{margin-left:auto;background:#fff;color:var(--ok);border-color:#fff;font-weight:700}
+
+.readbox{border-left:3px solid var(--gold);background:var(--goldbg);border-radius:0 12px 12px 0;padding:12px 16px 2px;margin:14px 0 18px}
+.readbox p:first-child::before{content:"Reading  ";font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.revisit{border:1px solid var(--mod-line);border-radius:16px;padding:18px 22px;margin-top:24px;background:var(--mod-soft)}
+.revisit b{font-size:16px;color:var(--mod-ink)}
+.revisit ul{margin:8px 0 0;padding-left:20px}
+.revisit li{margin-bottom:4px}
+.loading{color:var(--muted);padding:40px 0}
+
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:48px}
+.pg{display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid var(--hair);border-radius:16px;background:var(--paper);padding:16px 20px;cursor:pointer;min-width:0;box-shadow:var(--shadow-s);transition:border-color .15s,transform .15s,box-shadow .15s}
+.pg:hover{border-color:var(--mod-line);transform:translateY(-2px);box-shadow:var(--shadow-m)}
+.pg.nx{text-align:right;grid-column:2}
+.pg .pl{font-size:13px;color:var(--mod-ink);display:flex;align-items:center;gap:6px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pg.nx .pl{justify-content:flex-end}
+.pg .pl svg.i{width:15px;height:15px}
+.pg .pt{font-size:16px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg .pt .ar{font-size:1.2em}
+
+.totop{position:fixed;right:20px;bottom:20px;z-index:25;width:46px;height:46px;border-radius:50%;border:0;background:var(--mod);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--mod) 40%,transparent);display:grid;place-items:center;cursor:pointer;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .2s,background .15s}
+.totop.show{opacity:1;transform:none;pointer-events:auto}
+.totop:hover{background:var(--mod-ink)}
+
+/* ---------- contents page ---------- */
+.home-hero{position:relative;overflow:hidden;border-radius:22px;padding:34px 34px 30px;margin-bottom:22px;color:#fff;background:
+  radial-gradient(90% 120% at 100% 0%,rgba(255,255,255,.18) 0%,transparent 60%),
+  linear-gradient(135deg,#0f766e 0%,#134e4a 55%,#1e3a5f 100%);box-shadow:var(--shadow-m)}
+.home-hero::after{content:"الكتاب";position:absolute;right:28px;bottom:-34px;font-family:var(--ar);font-size:150px;line-height:1;color:rgba(255,255,255,.07);pointer-events:none}
+.home-hero .kick{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25);color:#fff}
+.home-hero h1.ltitle{color:#fff}
+.home-hero .lmeta{color:rgba(255,255,255,.85)}
+.home-hero .lmeta .sep{background:rgba(255,255,255,.5)}
+.resume{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1px solid var(--hair);border-radius:16px;background:var(--paper);color:var(--fg);padding:16px 20px;cursor:pointer;margin:0 0 22px;box-shadow:var(--shadow-s);transition:transform .15s,box-shadow .15s,border-color .15s}
+.resume::before{content:"";width:42px;height:42px;border-radius:12px;flex:none;background:var(--mod) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E") no-repeat center/20px}
+.resume:hover{transform:translateY(-2px);box-shadow:var(--shadow-m);border-color:var(--mod-line)}
+.resume .rl{font-size:13px;color:var(--muted);display:block}
+.resume .rt{font-size:17px;font-weight:700;flex:1;min-width:0}
+.resume .rw{display:flex;flex-direction:column;flex:1;min-width:0}
+.resume > svg.i{color:var(--mod)}
+.modgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.modcard{position:relative;display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid var(--hair);border-radius:18px;background:var(--paper);padding:20px 20px 18px;cursor:pointer;min-height:200px;overflow:hidden;box-shadow:var(--shadow-s);transition:border-color .2s,box-shadow .2s,transform .2s}
+.modcard::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--mod),color-mix(in srgb,var(--mod) 45%,#fff))}
+.modcard::after{content:"";position:absolute;right:-30px;bottom:-30px;width:120px;height:120px;border-radius:50%;background:var(--mod-soft);transition:transform .3s var(--ease)}
+.modcard > *{position:relative;z-index:1}
+.modcard:hover{border-color:var(--mod-line);box-shadow:var(--shadow-m);transform:translateY(-3px)}
+.modcard:hover::after{transform:scale(1.25)}
+.modcard .mk{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mod-ink);font-weight:700;background:var(--mod-soft);border-radius:99px;padding:2px 10px;margin-top:4px}
+.modcard.complete .mk{color:#fff;background:var(--mod)}
+.modcard .mt{font-size:19px;font-weight:700;line-height:1.25;margin-top:6px}
+.modcard .ma{font-size:22px;color:var(--mod-ink);line-height:1.5}
+.modcard .mm{font-size:13px;color:var(--muted);margin-top:auto;padding-top:8px}
+.modcard .mp{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.modcard .mp .bar{flex:1;width:auto}
+
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.012)}100%{transform:scale(1)}}
+.card.shake{animation:shake .35s}
+.card.pop{animation:pop .35s var(--ease)}
+main .page{animation:rise .3s var(--ease)}
+
+/* ---------- narrow screens: sidebar becomes a drawer ---------- */
+@media (max-width:900px){
+  .app,.app.collapsed{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;top:0;left:0;bottom:0;height:100dvh;width:min(320px,86vw);z-index:40;transform:translateX(-102%);transition:transform .28s var(--ease);border-right:1px solid var(--hair);box-shadow:0 0 40px rgba(30,25,15,.18);background:var(--canvas)}
+  .side-in{width:100%}
+  .side-head{display:flex}
+  .app.drawer .side{transform:none}
+  .app.drawer .scrim{opacity:1;pointer-events:auto}
+  .brand .ar{display:none}
+  .bar{width:70px}
+}
+@media (max-width:600px){
+  main{padding-top:18px}
+  h1.ltitle{font-size:26px}
+  .teach{font-size:16px;padding:6px 18px 16px;border-radius:14px}
+  .teach h2.sec{font-size:20px}
+  .lhead{padding:20px 18px 18px;border-radius:14px}
+  .phead{padding:18px 18px;border-radius:14px}
+  .card{padding:16px 14px 14px}
+  .overall .bar{display:none}
+  .overall{padding:4px 10px}
+  .pager{grid-template-columns:1fr}
+  .pg.nx{grid-column:1}
+  .done{flex-wrap:wrap}
+  .done .btn{margin-left:0;width:100%;justify-content:center}
+  .chipbtn{margin-left:0}
+  .home-hero{padding:24px 20px 22px;border-radius:16px}
+}
+@media (hover:none){.side-foot .keys,.phead .kb{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+
+<a class="skip" href="#main">Skip to content</a>
+<link rel="stylesheet" href="accounts.css">
+<header class="topbar">
+  <button type="button" class="iconbtn" id="railtoggle" aria-controls="side" aria-expanded="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+  <div class="brand" id="brand"></div>
+  <div class="overall" role="group" aria-label="Overall progress"><span class="num" id="ovtext"></span><div class="bar"><i id="ovbar"></i></div></div>
+  <button type="button" class="btn ghost account-trigger" id="account-open">Log in</button>
+  <div class="readline" id="readline"></div>
+</header>
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Contents">
+    <div class="side-in">
+      <div class="side-head"><b>Contents</b><button type="button" class="iconbtn" id="sideclose" aria-label="Close contents"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="side-scroll"><div class="side-label" id="sidelabel"></div><nav id="rail"></nav></div>
+      <div class="side-foot"><div class="save" id="save"></div><div class="keys"><kbd>[</kbd> <kbd>]</kbd> lessons · <kbd>\</kbd> sidebar</div></div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main id="main" tabindex="-1"></main>
+</div>
+<button type="button" class="totop" id="totop" aria-label="Back to top"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+
+<script id="book" type="application/json">{"title": "Arabic Grammar", "modules": [{"n": 1, "title": "Words and Sentences", "ar": "الكَلِمَةُ وَالجُمْلَةُ", "file": "modules/m01.js?v=91375af5", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Words and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أسماء<\/span>", "count": 8}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أفعال, حروف<\/span>, and the forms you need", "count": 10}, {"key": "3", "short": "Lesson 3", "title": "Building a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جملة<\/span> and beginning <span class=\"ar\" lang=\"ar\" dir=\"rtl\">تركيب<\/span>", "count": 8}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">جملة<\/span> structure and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جمل<\/span> inside <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جمل<\/span>", "count": 7}, {"key": "5", "short": "Lesson 5", "title": "Meaning, <span class=\"ar\" lang=\"ar\" dir=\"rtl\">كلام<\/span>, and independent classifications", "count": 8}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">شبه جملة<\/span> and what they attach to", "count": 9}, {"key": "7", "short": "Lesson 7", "title": "The roles of a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ظرف مستقرّ<\/span>", "count": 8}, {"key": "8", "short": "Lesson 8", "title": "Governing and being governed", "count": 9}, {"key": "9", "short": "Lesson 9", "title": "Visible, estimated, and positional <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إعراب<\/span>", "count": 8}, {"key": "R", "short": "Module review", "title": "Module review: apply the whole method", "count": 19}], "total": 94}, {"n": 2, "title": "Verbs as Governing Elements", "ar": "عَمَلُ الفِعْلِ", "file": "modules/m02.js?v=1e1798c8", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "What a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فعل<\/span> governs", "count": 8}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مفعول به واحد<\/span>, or two separate participants", "count": 8}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مفعولان<\/span> that express a statement", "count": 11}, {"key": "4", "short": "Lesson 4", "title": "Transformation and three-<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مفعول<\/span> constructions", "count": 8}, {"key": "5", "short": "Lesson 5", "title": "Omission and special uses of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">رأى<\/span>", "count": 8}, {"key": "6", "short": "Lesson 6", "title": "A <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مصدر مؤوّل<\/span> can fill <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مكان المفعولين<\/span>", "count": 9}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">تعليق<\/span>: suspending direct <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عمل<\/span>", "count": 8}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">إلغاء<\/span>: cancelling the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مفعول به عمل<\/span>", "count": 9}, {"key": "R", "short": "Module review", "title": "Module review: meaning, structure, and endings", "count": 16}], "total": 85}, {"n": 3, "title": "Special Verb Constructions", "ar": "الأَفْعَالُ النَّاقِصَةُ وَغَيْرُهَا", "file": "modules/m03.js?v=bcb9f477", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">كان<\/span> and the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">خبر<\/span> it requires", "count": 9}, {"key": "2", "short": "Lesson 2", "title": "The sisters of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">كان<\/span>", "count": 8}, {"key": "3", "short": "Lesson 3", "title": "Complete uses and omitted elements", "count": 8}, {"key": "4", "short": "Lesson 4", "title": "Hope with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عسى<\/span> and its sisters", "count": 8}, {"key": "5", "short": "Lesson 5", "title": "Near-occurrence with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">كاد<\/span> and its sisters", "count": 8}, {"key": "6", "short": "Lesson 6", "title": "Beginning an action", "count": 8}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مدح<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ذمّ<\/span>", "count": 8}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">حبّذا<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ما<\/span> after <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فعل مدح<\/span>", "count": 8}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">تعجّب<\/span>", "count": 8}, {"key": "R", "short": "Module review", "title": "Module review", "count": 16}], "total": 89}, {"n": 4, "title": "Prepositions", "ar": "حُرُوفُ الجَرِّ", "file": "modules/m04.js?v=1531f89c", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "The <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم<\/span> and the whole <span class=\"ar\" lang=\"ar\" dir=\"rtl\">شبه جملة<\/span>", "count": 7}, {"key": "2", "short": "Lesson 2", "title": "Bā and the relationship it expresses", "count": 7}, {"key": "3", "short": "Lesson 3", "title": "Min and ilā", "count": 7}, {"key": "4", "short": "Lesson 4", "title": "ʿAn and ʿalā", "count": 7}, {"key": "5", "short": "Lesson 5", "title": "Lām, fī, and kāf", "count": 8}, {"key": "6", "short": "Lesson 6", "title": "Ḥattā and limits", "count": 7}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">قسم حرف جرّ<\/span>", "count": 7}, {"key": "8", "short": "Lesson 8", "title": "Mudh and mundhu", "count": 8}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">حرف جرّ<\/span> resembling additional <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span>", "count": 8}, {"key": "10", "short": "Lesson 10", "title": "Additional bā and min", "count": 8}, {"key": "11", "short": "Lesson 11", "title": "Additional lām and kāf", "count": 7}, {"key": "12", "short": "Lesson 12", "title": "Omission, <span class=\"ar\" lang=\"ar\" dir=\"rtl\">تعلّق<\/span>, and incorporated meaning", "count": 8}, {"key": "R", "short": "Cumulative practice", "title": "Cumulative practice", "count": 17}], "total": 106}, {"n": 5, "title": "Particles Governing Nouns", "ar": "الحُرُوفُ العَامِلَةُ فِي الاسْمِ", "file": "modules/m05.js?v=b17da8ba", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Three patterns of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عمل<\/span>", "count": 3}, {"key": "2", "short": "Lesson 2", "title": "The six <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span> resembling <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أفعال<\/span>", "count": 8}, {"key": "3", "short": "Lesson 3", "title": "Choosing between <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إنّ<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أنّ<\/span>", "count": 8}, {"key": "4", "short": "Lesson 4", "title": "Further positions and genuine alternatives", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "Order and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عطف<\/span>", "count": 8}, {"key": "6", "short": "Lesson 6", "title": "Lightened <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إنْ<\/span>", "count": 8}, {"key": "7", "short": "Lesson 7", "title": "Lightened <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أنْ<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">كأنْ<\/span>", "count": 7}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">ما الكافّة<\/span>", "count": 7}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">لا لنفي الجنس<\/span>", "count": 8}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span> resembling <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ليس<\/span>", "count": 8}, {"key": "R", "short": "Cumulative practice", "title": "Cumulative practice", "count": 14}], "total": 85}, {"n": 6, "title": "Particles Governing Verbs", "ar": "الحُرُوفُ العَامِلَةُ فِي الفِعْلِ", "file": "modules/m06.js?v=b4421620", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Recognising the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فعل<\/span>'s ending", "count": 7}, {"key": "2", "short": "Lesson 2", "title": "Four explicit <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span> of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نصب<\/span>", "count": 7}, {"key": "3", "short": "Lesson 3", "title": "Which <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أَنْ<\/span>, and when may it be understood?", "count": 7}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أَنْ<\/span> that must remain unexpressed", "count": 7}, {"key": "5", "short": "Lesson 5", "title": "Accompaniment, consequence, and changing meanings", "count": 8}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span> governing one <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فعل<\/span> in <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جزم<\/span>", "count": 7}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span> governing a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">شرط<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جواب<\/span>", "count": 8}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">جواب<\/span> with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فـ<\/span>, and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">شروط<\/span> left unspoken", "count": 8}, {"key": "R", "short": "Final cumulative practice", "title": "Final cumulative practice", "count": 18}], "total": 77}, {"n": 7, "title": "Particles without Government", "ar": "الحُرُوفُ غَيْرُ العَامِلَةِ", "file": "modules/m07.js?v=8e71c0b0", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Joining expressions: <span class=\"ar\" lang=\"ar\" dir=\"rtl\">و، ف، ثم، حتى<\/span>", "count": 7}, {"key": "2", "short": "Lesson 2", "title": "Alternatives, exclusion, and correction", "count": 7}, {"key": "3", "short": "Lesson 3", "title": "Questions and their answers", "count": 7}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">توكيد<\/span> without case <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عمل<\/span>", "count": 7}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">شروط<\/span> without <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مجزوم عمل<\/span>", "count": 7}, {"key": "6", "short": "Lesson 6", "title": "Urging, offering, and drawing attention", "count": 7}, {"key": "7", "short": "Lesson 7", "title": "Turning a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جملة<\/span> into a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم<\/span>-like unit", "count": 7}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">نفي<\/span> and additional <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span>", "count": 7}, {"key": "9", "short": "Lesson 9", "title": "Wishes and future reference", "count": 7}, {"key": "10", "short": "Lesson 10", "title": "Explaining an expression: <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أيْ<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أنْ<\/span>", "count": 7}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">جواب<\/span> links and attached <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span>", "count": 7}, {"key": "12", "short": "Lesson 12", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">تنوين<\/span> and reading a whole construction", "count": 7}, {"key": "R", "short": "Cumulative application", "title": "Cumulative application", "count": 19}], "total": 103}, {"n": 8, "title": "Nouns as Governing Elements", "ar": "الأَسْمَاءُ العَامِلَةُ", "file": "modules/m08.js?v=7e39127a", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "How the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مصدر<\/span> governs", "count": 7}, {"key": "2", "short": "Lesson 2", "title": "What <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم الفاعل<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم المفعول<\/span> govern", "count": 7}, {"key": "3", "short": "Lesson 3", "title": "Qualities and intensity: <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الصفة المشبهة<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم المبالغة<\/span>", "count": 7}, {"key": "4", "short": "Lesson 4", "title": "Comparing qualities with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم التفضيل<\/span>", "count": 7}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أسماء الأفعال<\/span> and other expressions with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">معنى الفعل<\/span>", "count": 7}, {"key": "6", "short": "Lesson 6", "title": "Relationships and meaning in <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإضافة المعنوية<\/span>", "count": 7}, {"key": "7", "short": "Lesson 7", "title": "How <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإضافة اللفظية<\/span> preserves <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عمل<\/span>", "count": 7}, {"key": "8", "short": "Lesson 8", "title": "Endings, omissions, and special forms of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإضافة<\/span>", "count": 8}, {"key": "9", "short": "Lesson 9", "title": "Specifying the meaning of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الاسم المبهم التام<\/span>", "count": 7}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أسماء الشرط<\/span> for people and things", "count": 7}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أسماء الشرط<\/span> for time and place, and the uses of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أيّ<\/span>", "count": 8}, {"key": "R", "short": "Module review", "title": "Module review: identify the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span> and the relationship", "count": 10}], "total": 89}, {"n": 9, "title": "Implied and Omitted Governing Elements", "ar": "العَامِلُ المَعْنَوِيُّ وَحَذْفُ العَامِلِ", "file": "modules/m09.js?v=0d9072a3", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Explaining endings through <span class=\"ar\" lang=\"ar\" dir=\"rtl\">العامل المعنوي<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "Sharing a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">معمول<\/span> and recovering an omitted <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "When the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span> of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول المطلق<\/span> is omitted", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "Warning with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">التحذير<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "Encouraging with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإغراء<\/span> and specifying with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الاختصاص<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "Tracking the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ضمير<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span> in <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الاشتغال<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "Calling someone and analysing the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المنادى<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "Forms of the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المنادى<\/span> and shortening with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الترخيم<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "Calling for help, expressing wonder, and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الندبة<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "When the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span> of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الحال<\/span> is omitted", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: identify the relationship and justify the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">تقدير<\/span>", "count": 8}], "total": 68}, {"n": 10, "title": "Nominative Noun Roles", "ar": "المَرْفُوعَاتُ", "file": "modules/m10.js?v=9d2c8697", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Recognising the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فاعل<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">رفع<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "Ordering the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فاعل<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول به<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "Recognising the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نائب الفاعل<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "Recognising two patterns of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مبتدأ<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "Using a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نكرة<\/span> as <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مبتدأ<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "Recovering an omitted <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مبتدأ<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "Recognising the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">خبر<\/span> and its position", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "Recovering an omitted <span class=\"ar\" lang=\"ar\" dir=\"rtl\">خبر<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "Linking the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">خبر<\/span> with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فاء<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "Completing the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مرفوعات<\/span> with the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نواسخ<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: Establish the role before the ending", "count": 8}], "total": 68}, {"n": 11, "title": "Accusative Noun Roles", "ar": "المَنْصُوبَاتُ", "file": "modules/m11.js?v=c15a68b2", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول المطلق<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول به<\/span> and its position", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول فيه<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول له<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المفعول معه<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الحال<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">صاحب الحال<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "Distinctions within <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الحال<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التمييز<\/span> and what it clarifies", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">تمييز العدد<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">كم<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الاستثناء<\/span> with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إلّا<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "Other <span class=\"ar\" lang=\"ar\" dir=\"rtl\">أدوات الاستثناء<\/span> and special readings", "count": 6}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">خبر منصوب<\/span> or <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم منصوب<\/span>?", "count": 6}, {"key": "12", "short": "Lesson 12", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم لا لنفي الجنس<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: distinguish the relationships", "count": 9}], "total": 81}, {"n": 12, "title": "Genitive Noun Roles and Dependent Words", "ar": "المَجْرُورَاتُ وَالتَّوَابِعُ", "file": "modules/m12.js?v=3d6f5251", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المجرور<\/span> and the reason for <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جر<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">النعت الحقيقي<\/span> and the forms of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نعت<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">النعت السببي<\/span> and an omitted <span class=\"ar\" lang=\"ar\" dir=\"rtl\">منعوت<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">البدل<\/span> and its four types", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">عطف البيان<\/span> and the replacement test", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">عطف النسق على اللفظ والمحل والمعنى<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">العطف على الضمير<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">قطع<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التأكيد اللفظي<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التأكيد المعنوي<\/span> and its forms", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">شروط<\/span> and extensions of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">توكيد<\/span>", "count": 6}, {"key": "11", "short": "Lesson 11", "title": "Following a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محل<\/span> and recognising <span class=\"ar\" lang=\"ar\" dir=\"rtl\">معمول<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: establish every relationship", "count": 12}], "total": 78}, {"n": 13, "title": "Sentence and Phrase Roles", "ar": "مَحَلُّ الجُمْلَةِ وَشِبْهِ الجُمْلَةِ", "file": "modules/m13.js?v=5fc61fd0", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "The whole <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جملة<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محل<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">جملة الحال<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">واو الحال<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">جواب الشرط<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">رابطة<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الجملة المعمولة بالتبعية<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الجمل التي لا محل لها<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">القسم<\/span>, its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">جواب<\/span>, and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">شرط<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">شبه الجملة<\/span> as <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ظرف لغو<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">شبه الجملة<\/span> as <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ظرف مستقرّ<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "Choosing <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حال<\/span> or <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نعت<\/span>; <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نزع الخافض<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: Putting the relationships together", "count": 9}], "total": 63}, {"n": 14, "title": "Noun Inflection and Fixed Endings", "ar": "إِعْرَابُ الاِسْمِ وَبِنَاؤُهُ", "file": "modules/m14.js?v=d751d0b3", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Three ways of expressing <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إعراب<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإعراب بالحركة<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإعراب بالحرف<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المقصور والمنقوص<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "Special patterns of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إعراب تقديري<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإعراب المحلّي<\/span> and layered relationships", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المبني الأصلي والمبني العارض<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "Which <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ظروف<\/span> are <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مبنية<\/span>?", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أسماء الاستفهام والشرط والكنايات<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المركّب المزجي والمحكي<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review", "count": 8}], "total": 68}, {"n": 15, "title": "Nouns with Restricted Declension", "ar": "غَيْرُ المُنْصَرِفِ", "file": "modules/m15.js?v=478cae47", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">غير المنصرف<\/span> is still <span class=\"ar\" lang=\"ar\" dir=\"rtl\">معرب<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">ألف التأنيث الزائدة<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مجموع منتهى الجموع<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الصفة<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">شروط<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">العَلَم<\/span> with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">وزن الفعل، الألف والنون،<\/span> or <span class=\"ar\" lang=\"ar\" dir=\"rtl\">العدل<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">العَلَم المؤنث<\/span> and recognised alternatives", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">العَلَم العجمي<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">التركيب المزجي<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "Returning <span class=\"ar\" lang=\"ar\" dir=\"rtl\">كسرة<\/span>, removing <span class=\"ar\" lang=\"ar\" dir=\"rtl\">تنوين<\/span>, and the full decision", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: apply <span class=\"ar\" lang=\"ar\" dir=\"rtl\">غير المنصرف<\/span> in connected reading", "count": 9}], "total": 57}, {"n": 16, "title": "Verb Inflection and Fixed Endings", "ar": "إِعْرَابُ الفِعْلِ وَبِنَاؤُهُ", "file": "modules/m16.js?v=361795cd", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Recognise the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">صيغة<\/span> and the attached <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ضمير<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإعراب اللفظي<\/span> with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">صحيح الآخر<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الأفعال الخمسة<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نون الإعراب<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المعتلّ الآخر<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الإعراب التقديري<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">نون النسوة<\/span> and a changing <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محل<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">نون التوكيد<\/span> with a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مستتر<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الأفعال الخمسة<\/span> with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نون التوكيد<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">بناء الماضي<\/span> and when it has a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محل<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">بناء الأمر<\/span> and the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محل<\/span> of larger constructions", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: choose the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span>, then the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">علامة<\/span>", "count": 12}], "total": 66}, {"n": 17, "title": "Noun Types and Definiteness", "ar": "أَقْسَامُ الاسْمِ وَالمَعْرِفَةُ وَالنَّكِرَةُ", "file": "modules/m17.js?v=c5641813", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مصدر، مشتق، جامد<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">معرفة<\/span> and the three <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محال<\/span> of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الضمير<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">بارز، مستتر،<\/span> and the actual <span class=\"ar\" lang=\"ar\" dir=\"rtl\">فاعل<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "When a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ضمير<\/span> is <span class=\"ar\" lang=\"ar\" dir=\"rtl\">منفصل<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "Adding <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ياء المتكلّم<\/span> to a <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">توكيد الضمير<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">مرجعه<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">العلم، الكنية، اللقب<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المعرّف بأل: العهد والجنس<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أسماء الإشارة<\/span> and their added <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حروف<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الاسم الموصول، صلته، وعائده<\/span>", "count": 6}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">إضافة، تخصيص،<\/span> and the limits of <span class=\"ar\" lang=\"ar\" dir=\"rtl\">تعريف<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: Identification and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">تركيب<\/span> together", "count": 10}], "total": 76}, {"n": 18, "title": "Gender, Number, and Noun Forms", "ar": "التَّذْكِيرُ وَالتَّأْنِيثُ وَالعَدَدُ", "file": "modules/m18.js?v=09b427e6", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Recognising <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المذكر والمؤنث<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الموحّد والمثنّى<\/span>: form and role", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">تثنية المقصور والمنقوص والممدود<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مجموع المذكّر السالم<\/span> and its <span class=\"ar\" lang=\"ar\" dir=\"rtl\">شروط<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مجموع المؤنث السالم<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الجمع المكسّر: القلّة والكثرة<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">اسم الجمع واسم الجنس الجمعي<\/span> and reference", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التصغير والنسبة<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">العدد<\/span>: families, <span class=\"ar\" lang=\"ar\" dir=\"rtl\">واحد<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اثنان<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">ثلاثة إلى عشرة: مخالفة<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">إضافة<\/span>", "count": 6}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أحد عشر إلى تسعة وتسعين<\/span>", "count": 6}, {"key": "12", "short": "Lesson 12", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">مائة وألف<\/span>: choosing the whole analysis", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review", "count": 8}], "total": 80}, {"n": 19, "title": "Verb Forms and Agreement", "ar": "أَحْكَامُ الْفِعْلِ", "file": "modules/m19.js?v=f81153f3", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الزمن وصيغة الفعل<\/span>", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">صياغة الأمر<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">المبني للفاعل والمبني للمفعول به<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التصرف والجمود<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">نفي الفعل<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التأكيد ونوناه<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">ما يتغيّر عند إلحاق نون التوكيد<\/span>", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التأنيث الواجب والممتنع<\/span>", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التأنيث الجائز وسقوط العلامة<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">توحيد الفعل والضمير<\/span>", "count": 6}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">قراءات خاصة وشبه الفعل<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: <span class=\"ar\" lang=\"ar\" dir=\"rtl\">اجمع الصيغة والمعنى والتركيب<\/span>", "count": 12}], "total": 78}, {"n": 20, "title": "Writing, Joining, and Pausing", "ar": "الرَّسْمُ وَالوَصْلُ وَالوَقْفُ", "file": "modules/m20.js?v=cd1d0628", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "Written letters and pronounced letters", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الألف المتطرّفة<\/span>", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">همزة الوصل<\/span> in <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الابتداء<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الوصل<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "Special writing and linking with <span class=\"ar\" lang=\"ar\" dir=\"rtl\">همزة الوصل<\/span>", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التقاء الساكنين<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حرف المدّ<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "Moving the first <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ساكن<\/span> in <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الوصل<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الوقف<\/span> on ordinary endings", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الوقف<\/span> on <span class=\"ar\" lang=\"ar\" dir=\"rtl\">المقصور، المنقوص<\/span> and special <span class=\"ar\" lang=\"ar\" dir=\"rtl\">نون<\/span>", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review: <span class=\"ar\" lang=\"ar\" dir=\"rtl\">الرسم، النطق، والتركيب<\/span>", "count": 10}], "total": 58}, {"n": 21, "title": "Words with Multiple Functions", "ar": "وُجُوهُ الكَلِمَاتِ", "file": "modules/m21.js?v=4c804b3a", "interactive": true, "lessons": [{"key": "0", "short": "Introduction", "title": "Introduction", "count": 0}, {"key": "1", "short": "Lesson 1", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الهمزة وأم وبل<\/span>: read the relationship", "count": 6}, {"key": "2", "short": "Lesson 2", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">إذ وإذا ومذ ومنذ<\/span>: time and construction", "count": 6}, {"key": "3", "short": "Lesson 3", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">إنْ وأنْ وإمّا<\/span>: similar forms, different <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عمل<\/span>", "count": 6}, {"key": "4", "short": "Lesson 4", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">أل وأيّ وذا وذو: اسم<\/span> or <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حرف<\/span>?", "count": 6}, {"key": "5", "short": "Lesson 5", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">إي وأيْ ونعم وكلا وقد<\/span>: meaning supplies the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">قرينة<\/span>", "count": 6}, {"key": "6", "short": "Lesson 6", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">التاء والكاف<\/span>: distinguish <span class=\"ar\" lang=\"ar\" dir=\"rtl\">حرف<\/span> from <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ضمير<\/span>", "count": 6}, {"key": "7", "short": "Lesson 7", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">النون والياء: ضمير، علامة،<\/span> or added sound?", "count": 6}, {"key": "8", "short": "Lesson 8", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">الواو والفاء<\/span>: link, <span class=\"ar\" lang=\"ar\" dir=\"rtl\">ضمير<\/span>, or <span class=\"ar\" lang=\"ar\" dir=\"rtl\">علامة<\/span>?", "count": 6}, {"key": "9", "short": "Lesson 9", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">حتى وكي واللام<\/span>: identify the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">عامل<\/span>", "count": 6}, {"key": "10", "short": "Lesson 10", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">لا ولمّا وليس: نفي, نهي<\/span>, or another use?", "count": 6}, {"key": "11", "short": "Lesson 11", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">لو ولولا وعسى: شرط<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">رجاء<\/span>", "count": 6}, {"key": "12", "short": "Lesson 12", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">غير وحاشا وخلا وعدا: إضافة<\/span> and <span class=\"ar\" lang=\"ar\" dir=\"rtl\">استثناء<\/span>", "count": 6}, {"key": "13", "short": "Lesson 13", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">ما الاسمية<\/span>: establish the <span class=\"ar\" lang=\"ar\" dir=\"rtl\">محل<\/span>", "count": 6}, {"key": "14", "short": "Lesson 14", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">ما الحرفية: نفي، مصدر، كفّ،<\/span> or <span class=\"ar\" lang=\"ar\" dir=\"rtl\">زيادة<\/span>", "count": 6}, {"key": "15", "short": "Lesson 15", "title": "<span class=\"ar\" lang=\"ar\" dir=\"rtl\">من ومتى وكيف وكم<\/span>: read from the role outward", "count": 6}, {"key": "R", "short": "Module review", "title": "Module review", "count": 8}], "total": 98}]}</script>
+<script src="config.js"></script>
+<script src="progress-store.js"></script>
+<script src="accounts-ui.js"></script>
+<script>
+(function(){
+const BOOK = JSON.parse(document.getElementById('book').textContent);
+const MODS = BOOK.modules;
+const LOADED = window.BOOK_MODULES = window.BOOK_MODULES || {};
+let all = {};             // 'm<n>' -> lessonKey -> itemId -> {sel, res, open, note}
+let state = {};           // all['m' + current module]
+let MOD = null, LESSONS = [], modN = null, current = null;
+let last = {};            // module number -> last lesson key
+let lastMod = null;       // most recently opened module
+const LS = 'textbook', OLD_LS = 'm1practice';
+let refreshAccount = () => {}, ready = false, lastAccount = null;
+const accountStore = new TextbookProgressStore({
+  apiUrl: window.TEXTBOOK_CONFIG?.apiUrl || '',
+  storage: localStorage, sessionStorage, fetcher: window.fetch.bind(window), scope: location.pathname,
+  onStatus: text => setStatus(text),
+  onChange: () => {
+    refreshAccount();
+    if(!ready) return;
+    const account = accountStore.user?.id || null;
+    const value = accountStore.cache || loadGuest();
+    const changed = JSON.stringify(all) !== JSON.stringify(value.all || {});
+    all = JSON.parse(JSON.stringify(value.all || {}));
+    if(account !== lastAccount){ last = value.last || {}; lastAccount = account; }
+    if(modN != null) state = all['m' + modN] = all['m' + modN] || {};
+    if(changed){ if(modN == null) renderHome(); else render(); }
+    if(!account) setStatus('Progress is kept in this browser');
+  }
+});
+const $ = (s, r) => (r || document).querySelector(s);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const narrow = matchMedia('(max-width: 900px)');
+const behavior = () => reduced.matches ? 'auto' : 'smooth';
+const HUES = ['#0f766e', '#4338ca', '#8b3fa8', '#c2410c', '#0e7490', '#be185d', '#4d7c0f', '#a16207', '#1d4ed8', '#9f1239'];
+const hue = n => HUES[(n - 1) % HUES.length];
+function setHue(n){ document.documentElement.style.setProperty('--mod', n ? hue(n) : HUES[0]); }
+
+const ICON = {
+  check: '<svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  x: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  chev: '<svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  reset: '<svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  down: '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
+  left: '<svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  right: '<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+  book: '<svg class="i" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>',
+  eye: '<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+};
+
+/* ---------- storage ---------- */
+function loadGuest(){
+  let v = null;
+  try{ v = JSON.parse(localStorage.getItem(LS) || 'null'); }catch(e){}
+  if(!v){                              // carry over progress saved before the book had several modules
+    try{ const o = JSON.parse(localStorage.getItem(OLD_LS) || 'null'); if(o) v = {all: {m1: o.state || {}}, last: o.current ? {1: o.current} : {}, mod: 1}; }catch(e){}
+  }
+  return v || {};
+}
+function lsLoad(){ return accountStore.cache ? JSON.parse(JSON.stringify(accountStore.cache)) : loadGuest(); }
+function lsSet(){
+  const value = {all, last, mod: modN, lastMod};
+  if(accountStore.user){ accountStore.saveNavigation(value); return; }
+  try{ localStorage.setItem(LS, JSON.stringify(value)); }
+  catch(e){ setStatus('Browser storage is unavailable. Progress may be lost when this tab closes.'); }
+}
+function persist(key){
+  lsSet();
+  if(accountStore.user && modN != null) accountStore.changeLesson(modN, key, (all['m' + modN] || {})[key] || {});
+}
+function setStatus(t){ document.getElementById('save').textContent = t; }
+
+/* ---------- helpers ---------- */
+function lessonByKey(k){ return LESSONS.find(l => l.key === k); }
+function itemState(k, id){ state[k] = state[k] || {}; return state[k][id] = state[k][id] || {sel: null, res: null}; }
+function countOk(l){ const s = state[l.key] || {}; return l.items.filter(i => s[i.id] && s[i.id].res === 'ok').length; }
+function modOk(m){ const s = all['m' + m.n] || {}; let k = 0; m.lessons.forEach(l => { const x = s[l.key] || {}; k += Object.values(x).filter(v => v && v.res === 'ok').length; }); return Math.min(k, m.total); }
+const metaOf = n => MODS.find(m => m.n === n);
+const name = x => x.short;
+const numbered = ls => ls.filter(l => /^\d+$/.test(l.key) && l.key !== '0').length;
+function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
+function btn(cls, html, label){ const b = el('button', cls, html); b.type = 'button'; if(label) b.setAttribute('aria-label', label); return b; }
+function isArabicHeavy(h){ const t = h.replace(/<[^>]+>/g, ''); const ar = (t.match(/[؀-ۿ]/g) || []).length; return ar > 0 && ar >= (t.match(/[A-Za-z]/g) || []).length; }
+function plainLen(h){ return h.replace(/<[^>]+>/g, '').length; }
+function ring(p, label){ return '<span class="dot" aria-hidden="true" style="--p:' + p + '"><span><span class="lbl">' + label + '</span>' + ICON.check.replace('class="i"', 'class="i chk"') + '</span></span>'; }
+
+function loadModule(n){
+  if(LOADED[n]) return Promise.resolve(LOADED[n]);
+  const m = metaOf(n);
+  return new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = m.file;
+    s.onload = () => LOADED[n] ? res(LOADED[n]) : rej(new Error('empty module file'));
+    s.onerror = () => rej(new Error('could not load ' + m.file));
+    document.head.appendChild(s);
+  });
+}
+
+/* ---------- sidebar open / collapsed / drawer ---------- */
+const app = $('#app'), side = $('#side'), tg = $('#railtoggle');
+function sideOpen(){ return narrow.matches ? app.classList.contains('drawer') : !app.classList.contains('collapsed'); }
+function setSide(open, focusInside){
+  if(narrow.matches){
+    app.classList.toggle('drawer', open); document.body.classList.toggle('lock', open);
+    if(open && focusInside){ const c = side.querySelector('[aria-current="page"]') || side.querySelector('button'); if(c) setTimeout(() => c.focus(), 50); }
+    if(!open && focusInside) tg.focus();
+  } else {
+    app.classList.toggle('collapsed', !open);
+    try{ localStorage.setItem('railCollapsed', open ? '0' : '1'); }catch(e){}
+  }
+  syncSide();
+}
+function syncSide(){
+  const o = sideOpen(); const t = o ? 'Hide contents' : 'Show contents';
+  tg.setAttribute('aria-expanded', String(o)); tg.setAttribute('aria-label', t); tg.title = t + ' (\\)';
+  side.inert = !o;
+}
+tg.addEventListener('click', () => setSide(!sideOpen(), true));
+$('#sideclose').addEventListener('click', () => setSide(false, true));
+$('#scrim').addEventListener('click', () => setSide(false));
+narrow.addEventListener('change', () => { app.classList.remove('drawer'); document.body.classList.remove('lock'); syncSide(); });
+try{ if(localStorage.getItem('railCollapsed') === '1') app.classList.add('collapsed'); }catch(e){}
+syncSide();
+
+/* ---------- sidebar contents ---------- */
+function renderRail(){
+  const nav = document.getElementById('rail'); nav.innerHTML = '';
+  const label = $('#sidelabel');
+  if(modN == null){
+    label.textContent = 'Modules';
+    const ol = el('ol', 'lessons');
+    MODS.forEach(m => {
+      const k = modOk(m);
+      const b = btn('lesson-btn' + (m.total && k === m.total ? ' complete' : ''), ring(m.total ? k / m.total : 0, m.n) +
+        '<span class="lt"><span class="ln">Module ' + m.n + '</span><span class="ls">' + m.title + '</span></span><span class="cnt">' + (m.total ? k + '/' + m.total : '') + '</span>');
+      b.style.setProperty('--mod', hue(m.n));
+      b.addEventListener('click', () => { openModule(m.n); if(narrow.matches) setSide(false); });
+      const li = el('li'); li.appendChild(b); ol.appendChild(li);
+    });
+    nav.appendChild(ol);
+    return;
+  }
+  label.textContent = '';
+  const back = btn('backlink', ICON.left + 'All modules');
+  back.addEventListener('click', () => { goHome(); if(narrow.matches) setSide(false); });
+  label.appendChild(back);
+  nav.appendChild(el('div', 'modname', '<span>Module ' + modN + '</span><b>' + MOD.title + '</b>'));
+  const ol = el('ol', 'lessons');
+  LESSONS.forEach(l => {
+    const li = el('li');
+    const sub = l.key === '0' ? 'Start here' : l.key === 'R' ? (l.short === 'Module review' ? 'Apply the whole module' : 'Whole module') : l.title;
+    const b = btn('lesson-btn', ring(0, l.key === '0' ? 'i' : l.key === 'R' ? 'R' : l.key) +
+      '<span class="lt"><span class="ln">' + name(l) + '</span><span class="ls">' + sub + '</span></span><span class="cnt"></span>');
+    b.dataset.key = l.key;
+    if(l.key === current) b.setAttribute('aria-current', 'page');
+    b.addEventListener('click', () => { go(l.key); if(narrow.matches) setSide(false); });
+    li.appendChild(b);
+    if(l.key === current && (l.secs.length || l.items.length)){
+      const toc = el('ul', 'toc');
+      l.secs.forEach(s => toc.appendChild(tocLink(s.title, s.id)));
+      if(l.items.length) toc.appendChild(tocLink(l.key === 'R' ? 'Exercises' : 'Practice', 'L' + l.key + '-practice'));
+      li.appendChild(toc);
+    }
+    ol.appendChild(li);
+  });
+  nav.appendChild(ol);
+  updateRail();
+}
+function tocLink(title, id){
+  const li = el('li'); const a = el('a', null, title); a.href = '#' + id; a.dataset.target = id;
+  a.addEventListener('click', e => { e.preventDefault(); const x = document.getElementById(id); if(x) x.scrollIntoView({behavior: behavior()}); if(narrow.matches) setSide(false); });
+  li.appendChild(a); return li;
+}
+function updateRail(){
+  if(modN == null){ updateTop(); return; }
+  LESSONS.forEach(l => {
+    const b = side.querySelector('.lesson-btn[data-key="' + l.key + '"]'); if(!b) return;
+    const n = l.items.length, k = countOk(l);
+    b.querySelector('.dot').style.setProperty('--p', n ? k / n : 0);
+    b.classList.toggle('complete', n > 0 && k === n);
+    b.querySelector('.cnt').textContent = n ? k + '/' + n : '';
+    b.title = n ? k + ' of ' + n + ' exercises correct' : '';
+  });
+  updateTop();
+}
+function updateTop(){
+  let ok, tot;
+  if(modN == null){ ok = MODS.reduce((a, m) => a + modOk(m), 0); tot = MODS.reduce((a, m) => a + m.total, 0); }
+  else { ok = LESSONS.reduce((a, l) => a + countOk(l), 0); tot = LESSONS.reduce((a, l) => a + l.items.length, 0); }
+  tot = tot || 1;
+  document.getElementById('ovtext').innerHTML = '<b>' + ok + '</b> / ' + tot + (modN == null ? ' in the book' : LESSONS.some(l => l.items.some(i => i.type !== 'open')) ? ' correct' : ' done');
+  document.getElementById('ovbar').style.width = (100 * ok / tot) + '%';
+  const br = $('#brand');
+  br.innerHTML = modN == null ? '<span class="badge">' + ICON.book + '</span><b>' + BOOK.title + '</b>' : '<span class="badge">' + modN + '</span><b>Module ' + modN + ': ' + MOD.title + '</b>' + (MOD.ar ? '<span class="ar" lang="ar" dir="rtl">' + MOD.ar + '</span>' : '');
+  document.title = modN == null ? BOOK.title : 'Module ' + modN + ': ' + MOD.title;
+}
+
+/* ---------- navigation ---------- */
+function pushHash(h){ try{ if(location.hash !== h) history.pushState(null, '', h); }catch(e){} }
+function goHome(opts){
+  opts = opts || {};
+  modN = null; MOD = null; LESSONS = []; current = null; state = {}; lsSet(); setHue(null);
+  if(opts.push !== false) pushHash('#home');
+  renderHome(); window.scrollTo({top: 0});
+  const h = $('#ltitle'); if(h && opts.focus !== false) h.focus({preventScroll: true});
+}
+async function openModule(n, key, opts){
+  opts = opts || {};
+  const meta = metaOf(n); if(!meta){ goHome(opts); return; }
+  if(!LOADED[n]){ $('#main').innerHTML = '<div class="page"><p class="loading">Loading Module ' + n + '…</p></div>'; }
+  let data;
+  try{ data = await loadModule(n); }
+  catch(e){ $('#main').innerHTML = '<div class="page"><p class="loading">Module ' + n + ' could not be loaded. Rebuild the textbook and reload the page.</p></div>'; return; }
+  MOD = data; LESSONS = data.lessons; modN = n; lastMod = n; setHue(n);
+  state = all['m' + n] = all['m' + n] || {};
+  go(key && lessonByKey(key) ? key : (last[n] && lessonByKey(last[n]) ? last[n] : LESSONS[0].key), opts);
+}
+function go(k, opts){
+  opts = opts || {};
+  if(!lessonByKey(k)) return;
+  current = k; last[modN] = k; lsSet();
+  if(opts.push !== false) pushHash('#M' + modN + '/L' + k);
+  render();
+  if(opts.anchor){ const a = document.getElementById(opts.anchor); if(a) a.scrollIntoView(); }
+  else window.scrollTo({top: 0});
+  const h = $('#ltitle'); if(h && opts.focus !== false) h.focus({preventScroll: true});
+}
+function step(dir){                    // previous / next lesson, crossing into neighbouring modules
+  const i = LESSONS.indexOf(lessonByKey(current));
+  if(LESSONS[i + dir]) return go(LESSONS[i + dir].key);
+  const j = MODS.findIndex(m => m.n === modN) + dir;
+  if(MODS[j]) openModule(MODS[j].n, dir > 0 ? MODS[j].lessons[0].key : MODS[j].lessons[MODS[j].lessons.length - 1].key);
+}
+function neighbour(dir){
+  const i = LESSONS.indexOf(lessonByKey(current));
+  if(LESSONS[i + dir]) return {label: name(LESSONS[i + dir]) + (/^\d+$/.test(LESSONS[i + dir].key) && LESSONS[i + dir].key !== '0' ? ': ' + LESSONS[i + dir].title : ''), go: () => go(LESSONS[i + dir].key)};
+  const j = MODS.findIndex(m => m.n === modN) + dir;
+  if(MODS[j]) return {label: 'Module ' + MODS[j].n + ': ' + MODS[j].title, go: () => openModule(MODS[j].n, dir > 0 ? MODS[j].lessons[0].key : MODS[j].lessons[MODS[j].lessons.length - 1].key)};
+  return null;
+}
+function route(opts){
+  const h = location.hash;
+  let m = h.match(/^#M(\d+)(?:\/L(\w+))?$/);
+  if(m) return openModule(+m[1], m[2], opts);
+  m = h.match(/^#L(\w+)$/);                        // links from the single-module version
+  if(m) return openModule(1, m[1], opts);
+  return null;
+}
+window.addEventListener('popstate', () => { if(route({push: false}) === null) goHome({push: false}); });
+
+/* ---------- contents page ---------- */
+function renderHome(){
+  renderRail(); updateTop();
+  const main = document.getElementById('main'); main.innerHTML = '';
+  const page = el('div', 'page');
+  const tot = MODS.reduce((a, m) => a + m.total, 0);
+  const head = el('header', 'lhead home-hero');
+  head.appendChild(el('div', 'kick', 'Contents'));
+  const h1 = el('h1', 'ltitle', BOOK.title); h1.id = 'ltitle'; h1.tabIndex = -1; head.appendChild(h1);
+  head.appendChild(el('div', 'lmeta', '<span>' + MODS.length + ' modules</span><span class="sep"></span><span>' + MODS.reduce((a, m) => a + numbered(m.lessons), 0) + ' lessons</span><span class="sep"></span><span>' + tot + ' exercises</span>'));
+  page.appendChild(head);
+  const resumeMod = lastMod;
+  if(resumeMod && metaOf(resumeMod) && last[resumeMod]){
+    const m = metaOf(resumeMod), l = m.lessons.find(x => x.key === last[resumeMod]);
+    if(l){
+      const c = btn('resume', '<span class="rw"><span class="rl">Continue where you left off</span><span class="rt">Module ' + m.n + ' · ' + l.short + (/^\d+$/.test(l.key) && l.key !== '0' ? ': ' + l.title : '') + '</span></span>' + ICON.right);
+      c.style.setProperty('--mod', hue(m.n));
+      c.addEventListener('click', () => openModule(m.n, l.key)); page.appendChild(c);
+    }
+  }
+  const grid = el('div', 'modgrid');
+  MODS.forEach(m => {
+    const k = modOk(m), p = m.total ? k / m.total : 0;
+    const card = btn('modcard' + (m.total && k === m.total ? ' complete' : ''),
+      '<span class="mk">Module ' + m.n + (m.total && k === m.total ? ' · Complete' : '') + '</span>' +
+      '<span class="mt">' + m.title + '</span>' + (m.ar ? '<span class="ma ar" lang="ar" dir="rtl">' + m.ar + '</span>' : '') +
+      '<span class="mm">' + numbered(m.lessons) + ' lessons · ' + m.total + ' exercises · ' + (m.interactive ? 'auto-checked' : 'self-checked') + '</span>' +
+      '<span class="mp"><span class="bar"><i style="width:' + (100 * p) + '%"></i></span><span>' + k + '/' + m.total + '</span></span>');
+    card.style.setProperty('--mod', hue(m.n));
+    card.addEventListener('click', () => openModule(m.n));
+    grid.appendChild(card);
+  });
+  page.appendChild(grid);
+  main.appendChild(page);
+  spy(null);
+}
+
+/* ---------- multiple-choice and table exercises (auto-checked) ---------- */
+function cardShell(l, it){
+  const card = el('section', 'card'); card.id = 'q-' + it.id; card.tabIndex = -1;
+  card.setAttribute('aria-label', 'Exercise ' + it.id.replace('-Read', ' Reading'));
+  const top = el('div', 'qtop');
+  top.appendChild(el('span', 'qid', it.id.replace('-Read', ' · Reading')));
+  const badge = el('span', 'st'); badge.setAttribute('aria-hidden', 'true');
+  top.appendChild(badge); card.appendChild(top);
+  card.appendChild(el('div', 'prompt', it.prompt));
+  return {card, badge};
+}
+function solPanel(card, it){
+  const solwrap = el('div', 'solwrap'); const solin = el('div');
+  const sol = el('div', 'sol', '<h4>Worked solution</h4>' + (it.sol || '<p>No worked solution was found for this exercise in the answers file.</p>'));
+  sol.id = 'sol-' + it.id; solin.appendChild(sol); solwrap.appendChild(solin); card.appendChild(solwrap);
+  wrapTables(sol);
+  return {solwrap, solin, sol};
+}
+function nextTargetFor(l, it){
+  const i = l.items.indexOf(it);
+  const after = l.items.slice(i + 1), s = state[l.key] || {};
+  const todo = after.find(x => !(s[x.id] && s[x.id].res === 'ok'));
+  if(todo) return document.getElementById('q-' + todo.id);
+  const d = document.getElementById('done-' + l.key);
+  return d && d.classList.contains('show') ? d : (after[0] ? document.getElementById('q-' + after[0].id) : null);
+}
+function feedback(card, ok){ card.classList.remove('shake', 'pop'); void card.offsetWidth; card.classList.add(ok ? 'pop' : 'shake'); }
+
+function renderItem(l, it){
+  if(it.type === 'open') return renderOpen(l, it);
+  const st = itemState(l.key, it.id);
+  const {card, badge} = cardShell(l, it);
+  const marks = [];
+  let sel, optBtns = [];
+  if(it.type === 'mcq'){
+    sel = (st.sel && st.sel.length === 1) ? st.sel.slice() : [null];
+    const wrap = el('div', 'opts'); wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', 'Options');
+    it.opts.forEach((o, i) => {
+      const b = btn('opt', '<span class="key">' + String.fromCharCode(65 + i) + '</span><span class="otx">' + o + '</span><span class="mk"></span>');
+      b.setAttribute('aria-pressed', sel[0] === i ? 'true' : 'false');
+      b.addEventListener('click', () => pick(i));
+      b.addEventListener('keydown', e => {
+        if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); const n = optBtns[(i + (e.key === 'ArrowDown' ? 1 : -1) + optBtns.length) % optBtns.length]; n.focus(); }
+        else if(e.key === 'Enter' && sel[0] === i && !itemState(l.key, it.id).res){ e.preventDefault(); check.click(); }
+      });
+      optBtns.push(b); wrap.appendChild(b);
+    });
+    marks.push(show => optBtns.forEach((c, j) => {
+      c.classList.remove('ok', 'bad'); const mk = c.querySelector('.mk'); mk.innerHTML = '';
+      if(show && j === sel[0]){ const good = sel[0] === it.ans; c.classList.add(good ? 'ok' : 'bad'); mk.innerHTML = good ? ICON.check : ICON.x; }
+    }));
+    card.appendChild(wrap);
+  } else {
+    const cells = []; it.rows.forEach(r => r.cells.forEach(c => { if(c) cells.push(c); }));
+    sel = (st.sel && st.sel.length === cells.length) ? st.sel.slice() : cells.map(() => null);
+    const tw = el('div', 'tbl'); const t = el('table');
+    const thead = el('thead'); const hr = el('tr'); hr.appendChild(el('th', null, ''));
+    it.cols.forEach(c => hr.appendChild(el('th', null, c))); thead.appendChild(hr); t.appendChild(thead);
+    const tb = el('tbody'); let ci = 0;
+    it.rows.forEach(r => {
+      const tr = el('tr'); tr.appendChild(el('td', 'lab', r.label));
+      r.cells.forEach(c => {
+        const td = el('td');
+        if(!c){ td.innerHTML = '<span aria-hidden="true" style="color:var(--faint)">·</span>'; tr.appendChild(td); return; }
+        const idx = ci++;
+        const short = c.opts.length <= 4 && c.opts.every(o => plainLen(o) <= 26);
+        if(short){
+          const g = el('div', 'pills'); g.setAttribute('role', 'group');
+          c.opts.forEach((o, i) => {
+            const b = btn('pill', o);
+            b.setAttribute('aria-pressed', sel[idx] === i ? 'true' : 'false');
+            b.addEventListener('click', () => { sel[idx] = i; [...g.children].forEach((x, j) => x.setAttribute('aria-pressed', j === i ? 'true' : 'false')); td.classList.remove('ok', 'bad'); changed(); });
+            g.appendChild(b);
+          });
+          td.appendChild(g);
+        } else {
+          const s = el('select'); s.id = 'sel-' + it.id + '-' + idx;
+          s.setAttribute('aria-label', r.label.replace(/<[^>]+>/g, '') + (it.cols.length > 1 ? ', ' + (it.cols[r.cells.indexOf(c)] || '').replace(/<[^>]+>/g, '') : ''));
+          if(c.opts.every(isArabicHeavy)) s.classList.add('arsel');
+          s.appendChild(new Option('Choose…', ''));
+          c.opts.forEach((o, i) => s.appendChild(new Option(o.replace(/<[^>]+>/g, ''), String(i))));
+          s.value = sel[idx] == null ? '' : String(sel[idx]);
+          s.classList.toggle('filled', s.value !== '');
+          s.addEventListener('change', () => { sel[idx] = s.value === '' ? null : +s.value; s.classList.toggle('filled', s.value !== ''); td.classList.remove('ok', 'bad'); changed(); });
+          td.appendChild(s);
+        }
+        marks.push(show => { td.classList.remove('ok', 'bad'); if(show) td.classList.add(sel[idx] === c.ans ? 'ok' : 'bad'); });
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); tw.appendChild(t); card.appendChild(tw);
+    it._cells = cells;
+  }
+
+  const actions = el('div', 'actions');
+  const check = btn('btn primary', 'Check');
+  const show = btn('btn ghost', 'Worked solution ' + ICON.chev);
+  const reset = btn('btn ghost', ICON.reset + 'Reset');
+  const result = el('span', 'result'); result.setAttribute('role', 'status');
+  const hint = el('span', 'hint');
+  const next = btn('btn next', 'Next ' + ICON.down); next.hidden = true;
+  actions.append(check, result, hint, el('span', 'grow'), show, reset, next);
+  card.appendChild(actions);
+  const {solwrap, solin, sol} = solPanel(card, it);
+  show.setAttribute('aria-controls', sol.id);
+
+  function pick(i){ sel[0] = i; optBtns.forEach((c, j) => c.setAttribute('aria-pressed', j === i ? 'true' : 'false')); changed(); }
+  function answered(){ return sel.every(v => v != null); }
+  function grade(){
+    if(it.type === 'mcq') return {ok: sel[0] === it.ans ? 1 : 0, n: 1};
+    let ok = 0; it._cells.forEach((c, i) => { if(sel[i] === c.ans) ok++; }); return {ok, n: it._cells.length};
+  }
+  function paint(){
+    const s = itemState(l.key, it.id);
+    card.classList.remove('done-ok', 'done-bad');
+    badge.className = 'st'; badge.innerHTML = '';
+    if(s.res){
+      const g = grade();
+      marks.forEach(f => f(true));
+      card.classList.add(s.res === 'ok' ? 'done-ok' : 'done-bad');
+      badge.classList.add(s.res); badge.innerHTML = s.res === 'ok' ? ICON.check + 'Correct' : ICON.x + 'Try again';
+      result.className = 'result ' + s.res;
+      result.textContent = s.res === 'ok' ? 'Correct.' : (g.n > 1 ? g.ok + ' of ' + g.n + ' parts correct.' : 'Not quite. Pick another answer.');
+      hint.textContent = '';
+    } else {
+      marks.forEach(f => f(false)); result.className = 'result'; result.textContent = '';
+      const left = sel.filter(v => v == null).length;
+      hint.textContent = left && sel.length > 1 && left < sel.length ? left + ' left to answer' : '';
+    }
+    check.disabled = !answered() || !!s.res;
+    check.hidden = s.res === 'ok';
+    reset.hidden = !s.res && sel.every(v => v == null);
+    next.hidden = s.res !== 'ok' || !nextTargetFor(l, it);
+    solwrap.classList.toggle('open', !!s.open);
+    show.setAttribute('aria-expanded', String(!!s.open));
+    solin.inert = !s.open;
+  }
+  function changed(){ const s = itemState(l.key, it.id); s.sel = sel.slice(); s.res = null; persist(l.key); paint(); progressChanged(l); }
+  check.addEventListener('click', () => {
+    if(!answered()) return;
+    const s = itemState(l.key, it.id); const g = grade();
+    s.sel = sel.slice(); s.res = g.ok === g.n ? 'ok' : 'bad'; persist(l.key); paint(); progressChanged(l);
+    feedback(card, s.res === 'ok');
+    if(s.res === 'ok'){ if(!next.hidden) next.focus({preventScroll: true}); else show.focus({preventScroll: true}); }
+  });
+  card.addEventListener('animationend', () => card.classList.remove('shake', 'pop'));
+  reset.addEventListener('click', () => {
+    const s = itemState(l.key, it.id); s.sel = null; s.res = null; s.open = false; persist(l.key);
+    const fresh = renderItem(l, it); card.replaceWith(fresh); progressChanged(l);
+    const f = fresh.querySelector('.opt, .pill, select'); (f || fresh).focus({preventScroll: true});
+  });
+  show.addEventListener('click', () => { const s = itemState(l.key, it.id); s.open = !s.open; persist(l.key); paint(); });
+  next.addEventListener('click', () => { const t = nextTargetFor(l, it); if(t){ t.scrollIntoView({behavior: behavior(), block: 'start'}); t.focus({preventScroll: true}); } });
+  card.addEventListener('keydown', e => {
+    if(it.type !== 'mcq' || e.altKey || e.ctrlKey || e.metaKey || e.target.tagName === 'SELECT') return;
+    let i = -1;
+    if(/^[1-9]$/.test(e.key)) i = +e.key - 1;
+    else if(/^[a-z]$/i.test(e.key) && (e.target.classList.contains('opt') || e.target === card)) i = e.key.toUpperCase().charCodeAt(0) - 65;
+    if(i >= 0 && i < optBtns.length){ e.preventDefault(); pick(i); optBtns[i].focus(); }
+  });
+  paint();
+  return card;
+}
+
+/* ---------- open exercises (self-checked against the worked solution) ---------- */
+function renderOpen(l, it){
+  const st = itemState(l.key, it.id);
+  const {card, badge} = cardShell(l, it);
+  card.classList.add('open-q');
+  const ta = el('textarea', 'ans'); ta.rows = 3; ta.dir = 'auto';
+  ta.placeholder = 'Work out your answer here (optional, saved with your progress)';
+  ta.setAttribute('aria-label', 'Your answer to ' + it.id);
+  ta.value = st.note || '';
+  const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 2, 420) + 'px'; };
+  ta.addEventListener('input', () => { const s = itemState(l.key, it.id); s.note = ta.value; persist(l.key); grow(); progressChanged(l); });
+  card.appendChild(ta);
+
+  const actions = el('div', 'actions');
+  const reveal = btn('btn primary', ICON.eye + 'Reveal worked solution');
+  const hide = btn('btn ghost', 'Hide solution ' + ICON.chev);
+  const markWrap = el('div', 'selfmark'); markWrap.setAttribute('role', 'group'); markWrap.setAttribute('aria-label', 'How did you do?');
+  markWrap.appendChild(el('span', 'hint', 'How did you do?'));
+  const good = btn('btn mark-ok', ICON.check + 'I got it'), notyet = btn('btn mark-bad', ICON.x + 'Not yet');
+  markWrap.append(good, notyet);
+  const result = el('span', 'result'); result.setAttribute('role', 'status');
+  const reset = btn('btn ghost', ICON.reset + 'Reset');
+  const next = btn('btn next', 'Next ' + ICON.down); next.hidden = true;
+  actions.append(reveal, markWrap, result, el('span', 'grow'), hide, reset, next);
+  card.appendChild(actions);
+  const {solwrap, solin, sol} = solPanel(card, it);
+  reveal.setAttribute('aria-controls', sol.id); hide.setAttribute('aria-controls', sol.id);
+
+  function paint(){
+    const s = itemState(l.key, it.id);
+    card.classList.remove('done-ok', 'done-bad');
+    badge.className = 'st'; badge.innerHTML = '';
+    if(s.res){ card.classList.add(s.res === 'ok' ? 'done-ok' : 'done-bad'); badge.classList.add(s.res); badge.innerHTML = s.res === 'ok' ? ICON.check + 'Got it' : ICON.x + 'Revisit'; }
+    const open = !!s.open;
+    reveal.hidden = open;
+    hide.hidden = !open;
+    hide.setAttribute('aria-expanded', 'true');
+    markWrap.hidden = !open || !!s.res;
+    good.setAttribute('aria-pressed', String(s.res === 'ok')); notyet.setAttribute('aria-pressed', String(s.res === 'bad'));
+    result.className = 'result' + (s.res ? ' ' + s.res : '');
+    result.textContent = s.res === 'ok' ? 'Marked as correct.' : s.res === 'bad' ? 'Marked to revisit.' : '';
+    reset.hidden = !s.res && !s.note && !open;
+    next.hidden = s.res !== 'ok' || !nextTargetFor(l, it);
+    solwrap.classList.toggle('open', open);
+    solin.inert = !open;
+  }
+  function mark(res){
+    const s = itemState(l.key, it.id); s.res = res; persist(l.key); paint(); progressChanged(l); feedback(card, res === 'ok');
+    if(res === 'ok' && !next.hidden) next.focus({preventScroll: true}); else reset.focus({preventScroll: true});
+  }
+  reveal.addEventListener('click', () => { const s = itemState(l.key, it.id); s.open = true; persist(l.key); paint(); progressChanged(l); good.focus({preventScroll: true}); });
+  hide.addEventListener('click', () => { const s = itemState(l.key, it.id); s.open = false; persist(l.key); paint(); reveal.focus({preventScroll: true}); });
+  good.addEventListener('click', () => mark('ok'));
+  notyet.addEventListener('click', () => mark('bad'));
+  reset.addEventListener('click', () => {
+    const s = itemState(l.key, it.id); s.res = null; s.open = false; s.note = ''; persist(l.key);
+    const fresh = renderOpen(l, it); card.replaceWith(fresh); progressChanged(l); fresh.querySelector('textarea').focus({preventScroll: true});
+  });
+  next.addEventListener('click', () => { const t = nextTargetFor(l, it); if(t){ t.scrollIntoView({behavior: behavior(), block: 'start'}); t.focus({preventScroll: true}); } });
+  card.addEventListener('animationend', () => card.classList.remove('shake', 'pop'));
+  paint();
+  if(ta.value) requestAnimationFrame(grow);
+  return card;
+}
+
+/* ---------- lesson progress (chips, counts, completion) ---------- */
+function progressChanged(l){
+  updateRail();
+  const s = state[l.key] || {};
+  document.querySelectorAll('.qchip').forEach(c => {
+    const v = s[c.dataset.id];
+    c.classList.remove('ok', 'bad', 'wip');
+    if(v && v.res) c.classList.add(v.res);
+    else if(v && ((v.sel && v.sel.some(x => x != null)) || v.note || v.open)) c.classList.add('wip');
+    c.setAttribute('aria-label', 'Exercise ' + c.textContent + (v && v.res === 'ok' ? ', correct' : v && v.res === 'bad' ? ', to revisit' : ''));
+  });
+  const k = countOk(l), n = l.items.length, word = l.items.some(i => i.type !== 'open') ? ' correct' : ' done';
+  const m = $('#lmeta'); if(m) m.textContent = k + ' of ' + n + word;
+  const lb = $('#lbar'); if(lb) lb.style.width = (n ? 100 * k / n : 0) + '%';
+  const pc = $('#pcount'); if(pc) pc.textContent = k + ' / ' + n + word;
+  const d = $('#done-' + l.key); if(d) d.classList.toggle('show', n > 0 && k === n);
+}
+
+function wrapTables(root){ root.querySelectorAll('table').forEach(t => { if(t.parentElement.classList.contains('tbl')) return; const w = el('div', 'tbl'); t.replaceWith(w); w.appendChild(t); }); }
+
+/* ---------- whole lesson ---------- */
+function render(){
+  renderRail();
+  const l = lessonByKey(current);
+  const main = document.getElementById('main'); main.innerHTML = '';
+  const page = el('div', 'page');
+  const auto = l.items.some(it => it.type !== 'open');
+
+  const head = el('header', 'lhead');
+  head.appendChild(el('div', 'kick', 'Module ' + modN + ' · ' + (l.key === '0' ? 'Introduction' : l.key === 'R' ? name(l) : 'Lesson ' + l.key + ' of ' + numbered(LESSONS))));
+  const h1 = el('h1', 'ltitle', l.key === '0' ? MOD.title + (MOD.ar ? ' <span class="ar" lang="ar" dir="rtl">' + MOD.ar + '</span>' : '') : l.title);
+  h1.id = 'ltitle'; h1.tabIndex = -1; head.appendChild(h1);
+  const meta = el('div', 'lmeta');
+  const bits = [];
+  if(l.secs.length) bits.push(el('span', null, l.secs.length + (l.secs.length === 1 ? ' section' : ' sections')));
+  if(l.items.length){
+    bits.push(el('span', null, l.items.length + ' exercises'));
+    bits.push(el('span', 'lprog', '<span id="lmeta"></span><span class="bar"><i id="lbar"></i></span>'));
+  }
+  bits.forEach((b, j) => { if(j) meta.appendChild(el('span', 'sep')); meta.appendChild(b); });
+  if(l.items.length){
+    const jump = btn('chipbtn', (l.key === 'R' ? 'Go to exercises' : 'Go to practice') + ICON.down);
+    jump.addEventListener('click', () => { const p = document.getElementById('L' + l.key + '-practice'); if(p) p.scrollIntoView({behavior: behavior()}); });
+    meta.appendChild(jump);
+  }
+  head.appendChild(meta);
+  page.appendChild(head);
+
+  const body = el('div', 'teach', l.html); wrapTables(body); page.appendChild(body);
+
+  if(l.items.length){
+    const pr = el('section', 'practice'); pr.id = 'L' + l.key + '-practice';
+    const ph = el('div', 'phead');
+    ph.appendChild(el('div', null, '<h2>' + (l.key === 'R' ? 'Exercises' : 'Practice') + '</h2><p>' + (auto
+      ? 'Choose your answers, then press Check.<span class="kb"> Keys: <kbd>1</kbd>–<kbd>4</kbd> pick, <kbd>Enter</kbd> checks.</span>'
+      : 'Work out each answer, reveal the worked solution, then mark how you did.') + '</p>'));
+    const right = el('div', 'right');
+    right.appendChild(el('span', null, '<span id="pcount"></span>'));
+    const clr = btn('linkbtn', 'Clear answers');
+    let armed = false, armT;
+    clr.addEventListener('click', () => {
+      if(!armed){ armed = true; clr.classList.add('armed'); clr.textContent = 'Click again to clear all'; armT = setTimeout(() => { armed = false; clr.classList.remove('armed'); clr.textContent = 'Clear answers'; }, 4000); return; }
+      clearTimeout(armT); state[l.key] = {}; persist(l.key); render();
+      const p = document.getElementById('L' + l.key + '-practice'); if(p) p.scrollIntoView();
+    });
+    right.appendChild(clr); ph.appendChild(right); pr.appendChild(ph);
+
+    const qnav = el('nav', 'qnav'); qnav.setAttribute('aria-label', 'Jump to exercise');
+    l.items.forEach(it => {
+      const c = btn('qchip', it.id.replace('-Read', ' R')); c.dataset.id = it.id;
+      c.addEventListener('click', () => { const q = document.getElementById('q-' + it.id); if(q){ q.scrollIntoView({behavior: behavior(), block: 'start'}); q.focus({preventScroll: true}); } });
+      qnav.appendChild(c);
+    });
+    pr.appendChild(qnav);
+
+    let grp = null;
+    l.items.forEach(it => {
+      const g = it.group || '';
+      if(g && g !== grp){
+        grp = g; const [code, label] = g.split('|');
+        pr.appendChild(el('h3', 'set', (code ? '<span class="code">' + code + '</span>' : '') + label));
+      }
+      if(it.gnote) pr.appendChild(el('div', 'gnote', it.gnote));
+      pr.appendChild(renderItem(l, it));
+    });
+
+    const nx = neighbour(1);
+    const done = el('div', 'done', '<span class="big">' + ICON.check + '</span><div><b>' + (l.key === 'R' ? 'Module complete' : 'Lesson complete') + '</b><span>' + (auto ? 'Every exercise here is correct.' : 'You marked every exercise here as correct.') + '</span></div>');
+    done.id = 'done-' + l.key; done.tabIndex = -1;
+    if(nx){ const b = btn('btn', 'Continue ' + ICON.right); b.title = nx.label; b.addEventListener('click', nx.go); done.appendChild(b); }
+    pr.appendChild(done);
+    page.appendChild(pr);
+  }
+  if(l.after){ const a = el('div', 'teach', l.after); wrapTables(a); page.appendChild(a); }
+  if(l.key === 'R' && MOD.revisit) page.appendChild(el('div', 'revisit', '<b>Use errors to choose what to revisit</b>' + MOD.revisit));
+
+  const pg = el('nav', 'pager'); pg.setAttribute('aria-label', 'Lessons');
+  const pv = neighbour(-1), nv = neighbour(1);
+  if(pv){ const b = btn('pg pv', '<span class="pl">' + ICON.left + 'Previous</span><span class="pt">' + pv.label + '</span>'); b.addEventListener('click', pv.go); pg.appendChild(b); }
+  if(nv){ const b = btn('pg nx', '<span class="pl">Next' + ICON.right + '</span><span class="pt">' + nv.label + '</span>'); b.addEventListener('click', nv.go); pg.appendChild(b); }
+  page.appendChild(pg);
+
+  main.appendChild(page);
+  progressChanged(l);
+  spy(l);
+}
+
+/* ---------- scroll spy: active section in the sidebar, active exercise in the chip strip ---------- */
+let observers = [];
+function spy(l){
+  observers.forEach(o => o.disconnect()); observers = [];
+  window.__spySections = null;
+  if(!l || !('IntersectionObserver' in window)) return;
+  const links = [...side.querySelectorAll('.toc a')];
+  const targets = links.map(a => document.getElementById(a.dataset.target)).filter(Boolean);
+  const vis = new Map();
+  const setActive = () => {
+    let best = null;
+    targets.forEach(t => { const r = t.getBoundingClientRect(); if(r.top < window.innerHeight * 0.35) best = t; });
+    if(!best && targets.length) best = targets[0];
+    links.forEach(a => a.classList.toggle('active', !!best && a.dataset.target === best.id));
+  };
+  const o1 = new IntersectionObserver(setActive, {rootMargin: '0px 0px -60% 0px', threshold: [0, 1]});
+  targets.forEach(t => o1.observe(t)); observers.push(o1);
+  window.__spySections = setActive;
+  setActive();
+
+  const qnav = $('.qnav'); if(!qnav) return;
+  const o2 = new IntersectionObserver(es => {
+    es.forEach(e => vis.set(e.target.id, e.isIntersecting));
+    const id = [...vis].find(([, v]) => v);
+    qnav.querySelectorAll('.qchip').forEach(c => c.classList.remove('here'));
+    if(id){
+      const c = qnav.querySelector('[data-id="' + id[0].slice(2) + '"]');
+      if(c){ c.classList.add('here'); const left = c.offsetLeft - qnav.clientWidth / 2 + c.offsetWidth / 2; qnav.scrollTo({left, behavior: behavior()}); }
+    }
+  }, {rootMargin: '-35% 0px -55% 0px'});
+  l.items.forEach(it => { const c = document.getElementById('q-' + it.id); if(c) o2.observe(c); });
+  observers.push(o2);
+}
+
+/* ---------- scroll effects ---------- */
+const readline = $('#readline'), totop = $('#totop');
+let ticking = false;
+function onScroll(){
+  if(ticking) return; ticking = true;
+  requestAnimationFrame(() => {
+    const h = document.documentElement.scrollHeight - innerHeight;
+    readline.style.transform = 'scaleX(' + (h > 0 ? Math.min(1, scrollY / h) : 0) + ')';
+    totop.classList.toggle('show', scrollY > 900);
+    const q = $('.qnav'); if(q) q.classList.toggle('stuck', q.getBoundingClientRect().top <= parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top')) + 1);
+    if(window.__spySections) window.__spySections();
+    ticking = false;
+  });
+}
+addEventListener('scroll', onScroll, {passive: true});
+addEventListener('resize', onScroll);
+totop.addEventListener('click', () => { window.scrollTo({top: 0, behavior: behavior()}); const h = $('#ltitle'); if(h) h.focus({preventScroll: true}); });
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && narrow.matches && sideOpen()){ setSide(false, true); return; }
+  if(e.altKey || e.ctrlKey || e.metaKey) return;
+  const t = e.target; if(t.tagName === 'SELECT' || t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+  if(e.key === '\\'){ e.preventDefault(); setSide(!sideOpen(), narrow.matches); return; }
+  if(modN == null) return;
+  if(e.key === '['){ e.preventDefault(); step(-1); }
+  else if(e.key === ']'){ e.preventDefault(); step(1); }
+});
+
+/* ---------- start ---------- */
+const saved = lsLoad();
+all = saved.all || {}; last = saved.last || {}; lastMod = saved.lastMod || saved.mod || null;
+lastAccount = accountStore.user?.id || null;
+ready = true;
+refreshAccount = setupTextbookAccounts(accountStore, loadGuest);
+if(location.hash === '#home') goHome({push: false, focus: false});
+else if(route({push: false, focus: false}) === null){
+  if(saved.mod && metaOf(saved.mod)) openModule(saved.mod, null, {focus: false});
+  else goHome({focus: false});
+  try{ history.replaceState(null, '', saved.mod && metaOf(saved.mod) ? '#M' + saved.mod + (last[saved.mod] ? '/L' + last[saved.mod] : '') : '#home'); }catch(e){}
+}
+onScroll();
+setStatus('Progress is kept in this browser');
+
+accountStore.sync();
+addEventListener('online', () => accountStore.sync());
+addEventListener('beforeunload', event => {
+  if(accountStore.hasPending){ event.preventDefault(); event.returnValue = ''; }
+});
+})();
+</script>
+
+</body>
+</html>

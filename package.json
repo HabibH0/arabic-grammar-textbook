@@ -1,0 +1,20 @@
+{
+  "name": "arabic-grammar-textbook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "migrate": "node backend/migrate.mjs",
+    "dev:api": "node --env-file-if-exists=.env backend/dev.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "esbuild": "^0.28.2"
+  }
+}
